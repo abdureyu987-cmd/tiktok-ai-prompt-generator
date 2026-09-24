@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TikTok AI Prompt Generator</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --primary-blue: #3b82f6;
+            --accent-green: #10b981;
+            --purple-grad: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            --text-main: #f8fafc;
+            --text-sub: #cbd5e1;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100dvh;
+            overflow-x: hidden;
+            background: #0f172a;
+        }
+
+        body { 
+            background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%); 
+            color: var(--text-main); 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .app-container { 
+            width: 100%; 
+            max-width: 500px;
+            min-height: 100dvh;
+            display: flex; 
+            flex-direction: column; 
+            padding: 12px;
+            padding-bottom: 24px;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .app-title { font-size: 17px; font-weight: 800; color: #a855f7; }
+        .app-subtitle { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-box, .select-box {
+            width: 100%;
+            padding: 11px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #0f172a;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+        .input-box:focus, .select-box:focus { border-color: #a855f7; }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-generate { background: var(--purple-grad); color: #fff; margin-top: 4px; }
+        .btn-copy { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #38bdf8; padding: 5px 10px; font-size: 10px; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600; }
+
+        .result-area {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result-box {
+            background: #0f172a;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 11px;
+            color: #e2e8f0;
+            line-height: 1.4;
+            white-space: pre-line;
+            margin-top: 4px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <div class="app-header">
+            <div class="app-title">✨ TikTok AI Video Generator</div>
+            <div class="app-subtitle">Create AI Video Prompts & Viral Scripts</div>
+        </div>
+
+        <!-- FORM CARD -->
+        <div class="card">
+            <div class="form-group">
+                <label class="label">1. Video Topic</label>
+                <input type="text" id="topicInput" class="input-box" placeholder="e.g. Secrets of Wealth, Artificial Intelligence..." autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label class="label">2. Visual Style</label>
+                <select id="styleSelect" class="select-box">
+                    <option value="Hyper-realistic 8K, Cinematic Lighting, Unreal Engine 5 render, vertical 9:16">🎬 Cinematic & Realistic</option>
+                    <option value="3D Pixar Anime Style, Colorful, Cute, Vibrant 3D render, vertical 9:16">🎨 3D Animation (Pixar Style)</option>
+                    <option value="Cyberpunk Futuristic, Neon Lights, Dark Atmospheric Vibe, vertical 9:16">🏙️ Cyberpunk & Futuristic</option>
+                    <option value="Vintage 90s Film Camera Style, Grainy, Aesthetic Lighting, vertical 9:16">🎞️ Retro & Vintage Film</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="label">3. Video Tone</label>
+                <select id="toneSelect" class="select-box">
+                    <option value="Viral Motivational & Inspiring">🔥 Motivational & Inspiring</option>
+                    <option value="Shocking & Mysterious Fact">😱 Shocking & Mysterious</option>
+                    <option value="Educational & Informative">💡 Educational & Informative</option>
+                    <option value="Funny & Entertaining">😂 Funny & Entertaining</option>
+                </select>
+            </div>
+
+            <button class="btn btn-generate" onclick="generateAI()">
+                <span>🚀 Generate AI Prompt & Script</span>
+            </button>
+        </div>
+
+        <!-- OUTPUT RESULT CARD -->
+        <div class="card result-area" id="resultArea">
+            <!-- AI PROMPT SECTION -->
+            <div class="result-header">
+                <span class="label" style="color: #a855f7;">🤖 AI Video Prompt</span>
+                <button class="btn-copy" onclick="copyText('aiPromptResult')">Copy Prompt</button>
+            </div>
+            <div class="result-box" id="aiPromptResult"></div>
+
+            <!-- TIKTOK SCRIPT SECTION -->
+            <div class="result-header">
+                <span class="label" style="color: #34d399;">📜 Voiceover Script</span>
+                <button class="btn-copy" onclick="copyText('scriptResult')">Copy Script</button>
+            </div>
+            <div class="result-box" id="scriptResult"></div>
+
+            <!-- HASHTAGS SECTION -->
+            <div class="result-header">
+                <span class="label" style="color: #38bdf8;">#️⃣ Viral Hashtags</span>
+                <button class="btn-copy" onclick="copyText('hashtagResult')">Copy Hashtags</button>
+            </div>
+            <div class="result-box" id="hashtagResult"></div>
+        </div>
+    </div>
+
+    <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        function generateAI() {
+            let topic = document.getElementById('topicInput').value.trim();
+            let style = document.getElementById('styleSelect').value;
+            let tone = document.getElementById('toneSelect').value;
+            let resultArea = document.getElementById('resultArea');
+
+            if (!topic) {
+                alert("Please enter a video topic first!");
+                return;
+            }
+
+            // 1. English AI Video Prompt
+            let aiPrompt = `Vertical 9:16 cinematic video prompt for TikTok, Topic: ${topic}. Visual Style: ${style}. Atmosphere/Tone: ${tone}. Highly detailed, 8K resolution, trending on ArtStation, photorealistic lighting --ar 9:16 --v 6.0`;
+
+            // 2. English Voiceover Script
+            let script = `[HOOK (0-3 sec)]:
+"Stop scrolling! Save this video right now because you don't want to miss this secret."
+
+[BODY (3-20 sec)]:
+When we talk about ${topic}, most people make the same big mistake. Once you realize how this actually works, it changes everything. Here is what you need to know about ${topic}...
+
+[CALL TO ACTION (20-30 sec)]:
+"What do you think about this? Drop your thoughts in the comments below, and don't forget to follow for more content!"`;
+
+            // 3. English Viral Hashtags
+            let cleanTopic = topic.replace(/[^a-zA-Z0-9]/g, '');
+            let hashtags = `#TikTok #Viral #AIVideo #${cleanTopic} #Trending #FYP #ForYouPage #Motivation #TechTikTok`;
+
+            // Render Output
+            document.getElementById('aiPromptResult').innerText = aiPrompt;
+            document.getElementById('scriptResult').innerText = script;
+            document.getElementById('hashtagResult').innerText = hashtags;
+
+            resultArea.style.display = "block";
+            resultArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyText(elementId) {
+            let text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert("Copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
