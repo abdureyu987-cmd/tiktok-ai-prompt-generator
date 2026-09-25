@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TikTok AI Prompt Generator</title>
+    <title>Smart Trader Pro App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
             --card-bg: rgba(30, 41, 59, 0.95);
             --primary-blue: #3b82f6;
-            --accent-green: #10b981;
-            --purple-grad: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            --accent-green: #34d399;
             --text-main: #f8fafc;
             --text-sub: #cbd5e1;
         }
@@ -23,11 +22,12 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            touch-action: manipulation;
         }
-
+        
         html, body {
             width: 100%;
-            height: 100dvh;
+            height: 100%;
             overflow-x: hidden;
             background: #0f172a;
         }
@@ -39,178 +39,237 @@
             justify-content: center;
             align-items: flex-start;
         }
-
+        
         .app-container { 
             width: 100%; 
-            max-width: 500px;
-            min-height: 100dvh;
+            max-width: 480px; 
+            min-height: 100vh;
             display: flex; 
             flex-direction: column; 
             padding: 12px;
-            padding-bottom: 24px;
+            padding-bottom: 90px;
+            margin: 0 auto;
         }
-
-        .app-header {
-            text-align: center;
+        
+        .balance-card { 
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.85)); 
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-radius: 16px; 
+            padding: 14px; 
+            text-align: center; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); 
+            backdrop-filter: blur(12px);
             margin-bottom: 12px;
-            padding: 10px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
         }
-        .app-title { font-size: 17px; font-weight: 800; color: #a855f7; }
-        .app-subtitle { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+        .balance-title { font-size: 11px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .usd-val { font-size: 28px; font-weight: 800; color: var(--accent-green); margin: 4px 0; text-shadow: 0 0 12px rgba(52, 211, 153, 0.3); }
+        .pts-val { font-size: 12px; color: #38bdf8; font-weight: 700; }
+        
+        .tab-content { display: none; width: 100%; flex-direction: column; }
+        .tab-content.active { display: flex; }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        .card { 
+            background: var(--card-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 14px; 
+            padding: 14px; 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
             margin-bottom: 12px;
+            width: 100%;
+        }
+        .card-header { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .question-text { font-size: 14px; color: #e2e8f0; margin-bottom: 12px; line-height: 1.3; font-weight: 500; }
+        .options-grid { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        
+        .option-btn { 
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); 
+            color: #ffffff; border: none; padding: 14px; border-radius: 10px; 
+            font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; 
+            width: 100%;
+        }
+        .option-btn:active { filter: brightness(0.7); }
+
+        .task-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); width: 100%; }
+        .task-row:last-child { border-bottom: none; }
+        .task-info { display: flex; flex-direction: column; gap: 2px; }
+        .task-title { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+        .task-reward { font-size: 11px; color: var(--accent-green); font-weight: 700; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .btn:active { filter: brightness(0.7); }
+        .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; }
+
+        .link-box { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px dashed #3b82f6; font-size: 11px; color: #38bdf8; word-break: break-all; margin: 10px 0; text-align: center; width: 100%; }
+        #feedback { font-size: 13px; font-weight: 700; margin-top: 8px; text-align: center; min-height: 18px; width: 100%; }
+
+        .ad-box {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            overflow: hidden;
+            min-height: 50px;
         }
 
-        .form-group {
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+        .nav-item {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-
-        .label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .input-box, .select-box {
-            width: 100%;
-            padding: 11px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: #0f172a;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-        }
-        .input-box:focus, .select-box:focus { border-color: #a855f7; }
-
-        .btn {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.1s;
-            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-generate { background: var(--purple-grad); color: #fff; margin-top: 4px; }
-        .btn-copy { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #38bdf8; padding: 5px 10px; font-size: 10px; border-radius: 6px; cursor: pointer; width: auto; font-weight: 600; }
-
-        .result-area {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .result-box {
-            background: #0f172a;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 10px;
-            padding: 10px;
+            background: none;
+            border: none;
+            color: #94a3b8;
             font-size: 11px;
-            color: #e2e8f0;
-            line-height: 1.4;
-            white-space: pre-line;
-            margin-top: 4px;
-            max-height: 140px;
-            overflow-y: auto;
+            font-weight: 600;
+            cursor: pointer;
+            width: 25%;
+            gap: 2px;
         }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .nav-item .icon { font-size: 18px; }
+        .nav-item.active { color: #38bdf8; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- HEADER -->
-        <div class="app-header">
-            <div class="app-title">✨ TikTok AI Video Generator</div>
-            <div class="app-subtitle">Create AI Video Prompts & Viral Scripts</div>
+        <!-- BALANCE HEADER -->
+        <div class="balance-card">
+            <div class="balance-title">Main Earnings</div>
+            <div class="usd-val" id="usdDisplay">$0.000 USD</div>
+            <div class="pts-val" id="ptsDisplay">0 PTS</div>
         </div>
 
-        <!-- FORM CARD -->
-        <div class="card">
-            <div class="form-group">
-                <label class="label">1. Video Topic</label>
-                <input type="text" id="topicInput" class="input-box" placeholder="e.g. Secrets of Wealth, Artificial Intelligence..." autocomplete="off">
+        <!-- 1. QUIZ SECTION -->
+        <div id="quizTab" class="tab-content active">
+            
+            <div class="ad-box" id="bannerAd1">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '4dcd2d5be45bb39562568854e063e5df',
+                        'format' : 'iframe',
+                        'height' : 50,
+                        'width' : 320,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="https://www.highrevenueformat.com/4dcd2d5be45bb39562568854e063e5df/invoke.js"></script>
             </div>
 
-            <div class="form-group">
-                <label class="label">2. Visual Style</label>
-                <select id="styleSelect" class="select-box">
-                    <option value="Hyper-realistic 8K, Cinematic Lighting, Unreal Engine 5 render, vertical 9:16">🎬 Cinematic & Realistic</option>
-                    <option value="3D Pixar Anime Style, Colorful, Cute, Vibrant 3D render, vertical 9:16">🎨 3D Animation (Pixar Style)</option>
-                    <option value="Cyberpunk Futuristic, Neon Lights, Dark Atmospheric Vibe, vertical 9:16">🏙️ Cyberpunk & Futuristic</option>
-                    <option value="Vintage 90s Film Camera Style, Grainy, Aesthetic Lighting, vertical 9:16">🎞️ Retro & Vintage Film</option>
-                </select>
+            <div class="card">
+                <div class="card-header">
+                    <span>🧠 Trivia Challenge</span>
+                    <span style="font-size: 11px; color: #fbbf24;" id="qReward">+$0.002</span>
+                </div>
+                <div class="question-text" id="questionBox">Loading question...</div>
+                <div class="options-grid" id="optionsBox"></div>
+                <div id="feedback"></div>
             </div>
 
-            <div class="form-group">
-                <label class="label">3. Video Tone</label>
-                <select id="toneSelect" class="select-box">
-                    <option value="Viral Motivational & Inspiring">🔥 Motivational & Inspiring</option>
-                    <option value="Shocking & Mysterious Fact">😱 Shocking & Mysterious</option>
-                    <option value="Educational & Informative">💡 Educational & Informative</option>
-                    <option value="Funny & Entertaining">😂 Funny & Entertaining</option>
-                </select>
+            <div class="ad-box" id="bannerAd2">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '3b79b1600f4dce57954711090d5df308',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="https://www.highrevenueformat.com/3b79b1600f4dce57954711090d5df308/invoke.js"></script>
             </div>
-
-            <button class="btn btn-generate" onclick="generateAI()">
-                <span>🚀 Generate AI Prompt & Script</span>
-            </button>
         </div>
 
-        <!-- OUTPUT RESULT CARD -->
-        <div class="card result-area" id="resultArea">
-            <!-- AI PROMPT SECTION -->
-            <div class="result-header">
-                <span class="label" style="color: #a855f7;">🤖 AI Video Prompt</span>
-                <button class="btn-copy" onclick="copyText('aiPromptResult')">Copy Prompt</button>
+        <!-- 2. TASKS SECTION -->
+        <div id="tasksTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">🎁 Daily Check-in</div>
+                <div class="task-row">
+                    <div class="task-info">
+                        <span class="task-title">Claim Daily Bonus</span>
+                        <span class="task-reward">+$0.005 USD</span>
+                    </div>
+                    <button class="btn btn-success" style="width: 75px; padding: 6px 10px; font-size: 12px;" onclick="claimDaily()">Claim</button>
+                </div>
             </div>
-            <div class="result-box" id="aiPromptResult"></div>
 
-            <!-- TIKTOK SCRIPT SECTION -->
-            <div class="result-header">
-                <span class="label" style="color: #34d399;">📜 Voiceover Script</span>
-                <button class="btn-copy" onclick="copyText('scriptResult')">Copy Script</button>
-            </div>
-            <div class="result-box" id="scriptResult"></div>
+            <div class="card">
+                <div class="card-header">🚀 Reward Boosters</div>
+                <div class="task-row">
+                    <div class="task-info">
+                        <span class="task-title">Join Telegram Channel</span>
+                        <span class="task-reward">+$0.050 USD</span>
+                    </div>
+                    <button class="btn btn-success" style="width: 75px; padding: 6px 10px; font-size: 12px;" onclick="joinChannel()">Join</button>
+                </div>
 
-            <!-- HASHTAGS SECTION -->
-            <div class="result-header">
-                <span class="label" style="color: #38bdf8;">#️⃣ Viral Hashtags</span>
-                <button class="btn-copy" onclick="copyText('hashtagResult')">Copy Hashtags</button>
+                <div class="task-row">
+                    <div class="task-info">
+                        <span class="task-title">Watch Video Ad</span>
+                        <span class="task-reward">+$0.010 USD</span>
+                    </div>
+                    <button class="btn btn-warning" style="width: 75px; padding: 6px 10px; font-size: 12px;" onclick="watchAd()">Watch</button>
+                </div>
             </div>
-            <div class="result-box" id="hashtagResult"></div>
         </div>
+
+        <!-- 3. REFERRAL SECTION -->
+        <div id="referralTab" class="tab-content">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 4px;">🤝</div>
+                <div class="card-header" style="justify-content: center;">Invite Friends & Earn</div>
+                <p style="font-size: 12px; color: var(--text-sub);">Earn <strong style="color: var(--accent-green);">+$0.020 USD</strong> per invite!</p>
+                
+                <div class="link-box" id="refLink">https://t.me/SMARtTrader0r_bot?start=ref12345</div>
+                <button class="btn btn-primary" onclick="copyLink()">Copy Invite Link</button>
+            </div>
+        </div>
+
+        <!-- 4. CASHOUT SECTION -->
+        <div id="cashoutTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">💳 Withdraw Funds</div>
+                <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 10px;">Min Threshold: <strong style="color: #fbbf24;">$100.00 USD</strong></p>
+                <button class="btn btn-primary" onclick="withdraw()">Request Withdrawal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM MOBILE NAVIGATION BAR -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('quizTab', this)">
+            <span class="icon">🧠</span>
+            <span>Quiz</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tasksTab', this)">
+            <span class="icon">🚀</span>
+            <span>Tasks</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('referralTab', this)">
+            <span class="icon">👥</span>
+            <span>Refer</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('cashoutTab', this)">
+            <span class="icon">💳</span>
+            <span>Wallet</span>
+        </button>
     </div>
 
     <script>
@@ -219,48 +278,139 @@
             window.Telegram.WebApp.expand();
         }
 
-        function generateAI() {
-            let topic = document.getElementById('topicInput').value.trim();
-            let style = document.getElementById('styleSelect').value;
-            let tone = document.getElementById('toneSelect').value;
-            let resultArea = document.getElementById('resultArea');
+        let usdBalance = localStorage.getItem('app_usd') ? parseFloat(localStorage.getItem('app_usd')) : 0.000;
+        let adCount = localStorage.getItem('ads_watched') ? parseInt(localStorage.getItem('ads_watched')) : 0;
 
-            if (!topic) {
-                alert("Please enter a video topic first!");
-                return;
+        function updateUI() {
+            document.getElementById('usdDisplay').innerText = "$" + usdBalance.toFixed(3) + " USD";
+            let pts = Math.floor(usdBalance * 1000);
+            document.getElementById('ptsDisplay').innerText = pts + " PTS";
+            localStorage.setItem('app_usd', usdBalance);
+        }
+        updateUI();
+
+        function switchTab(tabId, element) {
+            let tabs = document.querySelectorAll('.tab-content');
+            let navBtns = document.querySelectorAll('.nav-item');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        const questions = [
+            { q: "What is the capital city of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], correct: 2 },
+            { q: "Which cryptocurrency is considered Digital Gold?", options: ["Ethereum", "Bitcoin", "Solana", "Dogecoin"], correct: 1 },
+            { q: "What does Forex stand for?", options: ["Foreign Exchange", "Forward Exercise", "Formal Exchange", "Forest Export"], correct: 0 },
+            { q: "How many hours are there in a day?", options: ["12", "24", "48", "36"], correct: 1 }
+        ];
+        let currentQ = 0;
+        let lockAnswer = false;
+
+        function loadQuestion() {
+            lockAnswer = false;
+            let qData = questions[currentQ];
+            document.getElementById('questionBox').innerText = (currentQ + 1) + ". " + qData.q;
+            let optionsBox = document.getElementById('optionsBox');
+            optionsBox.innerHTML = "";
+            
+            qData.options.forEach((opt, idx) => {
+                let btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                
+                // በአንዴ ንክኪ (Single Tap) ፈጣን ምላሽ እንዲሰጥ በ pointerdown ተደረገ
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    checkAnswer(idx, btn);
+                });
+
+                optionsBox.appendChild(btn);
+            });
+            document.getElementById('feedback').innerText = "";
+        }
+
+        function checkAnswer(selected, btnElement) {
+            if (lockAnswer) return;
+            lockAnswer = true;
+
+            let feedback = document.getElementById('feedback');
+
+            if (selected === questions[currentQ].correct) {
+                usdBalance += 0.002;
+                updateUI();
+                feedback.style.color = "#34d399";
+                feedback.innerText = "Correct! +$0.002 Added.";
+                btnElement.style.background = "#10b981";
+            } else {
+                feedback.style.color = "#f87171";
+                feedback.innerText = "Wrong answer!";
+                btnElement.style.background = "#ef4444";
             }
 
-            // 1. English AI Video Prompt
-            let aiPrompt = `Vertical 9:16 cinematic video prompt for TikTok, Topic: ${topic}. Visual Style: ${style}. Atmosphere/Tone: ${tone}. Highly detailed, 8K resolution, trending on ArtStation, photorealistic lighting --ar 9:16 --v 6.0`;
+            setTimeout(() => {
+                currentQ = (currentQ + 1) % questions.length;
+                loadQuestion();
+            }, 400);
+        }
+        loadQuestion();
 
-            // 2. English Voiceover Script
-            let script = `[HOOK (0-3 sec)]:
-"Stop scrolling! Save this video right now because you don't want to miss this secret."
-
-[BODY (3-20 sec)]:
-When we talk about ${topic}, most people make the same big mistake. Once you realize how this actually works, it changes everything. Here is what you need to know about ${topic}...
-
-[CALL TO ACTION (20-30 sec)]:
-"What do you think about this? Drop your thoughts in the comments below, and don't forget to follow for more content!"`;
-
-            // 3. English Viral Hashtags
-            let cleanTopic = topic.replace(/[^a-zA-Z0-9]/g, '');
-            let hashtags = `#TikTok #Viral #AIVideo #${cleanTopic} #Trending #FYP #ForYouPage #Motivation #TechTikTok`;
-
-            // Render Output
-            document.getElementById('aiPromptResult').innerText = aiPrompt;
-            document.getElementById('scriptResult').innerText = script;
-            document.getElementById('hashtagResult').innerText = hashtags;
-
-            resultArea.style.display = "block";
-            resultArea.scrollIntoView({ behavior: 'smooth' });
+        function claimDaily() {
+            let lastClaim = localStorage.getItem('last_claim');
+            let today = new Date().toDateString();
+            if (lastClaim === today) {
+                alert("Already claimed today!");
+            } else {
+                usdBalance += 0.005;
+                localStorage.setItem('last_claim', today);
+                updateUI();
+                alert("+$0.005 USD Claimed!");
+            }
         }
 
-        function copyText(elementId) {
-            let text = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(text);
-            alert("Copied to clipboard!");
+        function joinChannel() {
+            window.open("https://t.me/SMARtTrader0r", "_blank");
+            setTimeout(() => {
+                usdBalance += 0.050;
+                updateUI();
+                alert("+$0.050 USD Added!");
+            }, 1000);
         }
+
+        function watchAd() {
+            usdBalance += 0.010;
+            adCount++;
+            localStorage.setItem('ads_watched', adCount);
+            updateUI();
+            alert("Ad watched successfully!");
+        }
+
+        function copyLink() {
+            let linkText = document.getElementById('refLink').innerText;
+            navigator.clipboard.writeText(linkText);
+            alert("Invite link copied!");
+        }
+
+        function withdraw() {
+            if (usdBalance < 100) {
+                alert("Minimum withdrawal limit is $100.00 USD.");
+            } else {
+                alert("Verification Pending!");
+            }
+        }
+
+        // ማስታወቂያዎቹ በትክክል እንዲጫኑ እና በየ 10 ሰከንዱ አዲስ ማስታወቂያ እንዲመጣ
+        setInterval(() => {
+            try {
+                let adScript = document.createElement('script');
+                adScript.src = "https://pl31505823.profitableratecpmnetwork.com/0d/61/12/0d611270737c19cfba639f6c680670fe.js";
+                document.body.appendChild(adScript);
+            } catch(e) {
+                console.log("Ad error");
+            }
+        }, 10000);
     </script>
 </body>
 </html>
